@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talpis — Календарь мероприятий</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E2C97E;
+    --gold-dark: #A88B3A;
+    --tr: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  [data-theme="dark"] {
+    --bg: #0E0E12;
+    --bg2: #151519;
+    --bg-card: #1A1A22;
+    --bg-header: rgba(14,14,18,0.94);
+    --text: #E8E6E1;
+    --text2: #B0ADA5;
+    --muted: #5E5C66;
+    --border: rgba(201,168,76,0.08);
+    --border2: rgba(201,168,76,0.2);
+    --shadow: 0 2px 16px rgba(0,0,0,0.35);
+    --row-hover: rgba(201,168,76,0.04);
+    --toggle-bg: #2A2A35;
+    --today-bg: rgba(201,168,76,0.08);
+  }
+
+  [data-theme="light"] {
+    --bg: #F5F2ED;
+    --bg2: #EFEBE4;
+    --bg-card: #FFFFFF;
+    --bg-header: rgba(245,242,237,0.94);
+    --text: #1A1A1F;
+    --text2: #5A5750;
+    --muted: #A09D95;
+    --border: rgba(201,168,76,0.1);
+    --border2: rgba(201,168,76,0.28);
+    --shadow: 0 2px 16px rgba(0,0,0,0.06);
+    --row-hover: rgba(201,168,76,0.05);
+    --toggle-bg: #E2DED6;
+    --today-bg: rgba(201,168,76,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background var(--tr), color var(--tr);
+  }
+
+  .header {
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(24px);
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: background var(--tr), border var(--tr);
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700; font-size: 26px;
+    letter-spacing: 4px; text-transform: uppercase;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .logo-sub {
+    font-weight: 300; font-size: 10px;
+    letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--muted); margin-top: 1px;
+  }
+
+  .theme-toggle {
+    width: 48px; height: 26px;
+    background: var(--toggle-bg); border-radius: 13px;
+    cursor: pointer; position: relative;
+    border: 1px solid var(--border);
+    transition: background var(--tr);
+  }
+  .theme-toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--gold); transition: transform var(--tr);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  }
+  [data-theme="light"] .theme-toggle::after { transform: translateX(22px); }
+  .theme-toggle .ic { position: absolute; top: 50%; transform: translateY(-50%); font-size: 12px; }
+  .theme-toggle .ic-m { left: 6px; }
+  .theme-toggle .ic-s { right: 5px; }
+
+  .month-nav {
+    display: flex; align-items: center; justify-content: center;
+    gap: 20px; padding: 20px 28px 14px;
+  }
+  .month-nav button {
+    background: none; border: 1px solid var(--border2);
+    color: var(--gold); width: 36px; height: 36px;
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; transition: all 0.25s;
+  }
+  .month-nav button:hover {
+    background: var(--gold); color: var(--bg);
+    border-color: var(--gold); transform: scale(1.1);
+  }
+  .month-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 600;
+    min-width: 240px; text-align: center;
+  }
+  .month-title span { color: var(--gold); }
+
+  /* CALENDAR GRID */
+  .cal {
+    padding: 0 28px 40px; overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+  }
+  .cal::-webkit-scrollbar { height: 6px; }
+  .cal::-webkit-scrollbar-track { background: transparent; }
+  .cal::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  .week-head {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(220px, 1fr));
+    min-width: 1540px;
+    gap: 1px;
+    margin-bottom: 2px;
+    position: relative; z-index: 10;
+    background: var(--bg); padding: 6px 0;
+    transition: background var(--tr);
+  }
+  .wh {
+    text-align: center; padding: 8px 0;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .wh.we { color: var(--gold); opacity: 0.5; }
+
+  .week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(220px, 1fr));
+    min-width: 1540px;
+    gap: 1px;
+    margin-bottom: 1px;
+  }
+
+  .dc {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    min-height: 280px;
+    padding: 8px;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+  }
+  .dc:hover { background: var(--row-hover); border-color: var(--border2); }
+  .dc.today { background: var(--today-bg); border-color: var(--border2); }
+  .dc.empty { background: transparent; border-color: transparent; min-height: 50px; pointer-events: none; }
+  .dc.we { opacity: 0.65; }
+
+  .ev-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+  }
+  .ev-list::-webkit-scrollbar { width: 3px; }
+  .ev-list::-webkit-scrollbar-track { background: transparent; }
+  .ev-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .dn {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 700;
+    line-height: 1; margin-bottom: 6px;
+    color: var(--text2);
+  }
+  .dc.today .dn { color: var(--gold); }
+
+  .td {
+    display: inline-block;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--gold);
+    margin-left: 4px; vertical-align: middle;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
+    50% { box-shadow: 0 0 0 5px rgba(201,168,76,0); }
+  }
+
+  .ev {
+    padding: 6px 8px; border-radius: 5px;
+    font-size: 11px; line-height: 1.4;
+    margin-bottom: 4px;
+    border-left: 2.5px solid transparent;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .ev:hover { transform: translateX(2px); box-shadow: var(--shadow); }
+  .ev-time { font-size: 9px; font-weight: 600; opacity: 0.7; display: block; margin-bottom: 2px; }
+  .ev-title { font-weight: 600; display: block; margin-bottom: 2px; }
+  .ev-desc { font-size: 10px; font-weight: 300; opacity: 0.75; line-height: 1.35; display: block; }
+
+  .ev.gold { background: rgba(201,168,76,0.12); border-left-color: var(--gold); }
+  .ev.emerald { background: rgba(52,211,153,0.1); border-left-color: #34D399; }
+  .ev.rose { background: rgba(244,114,182,0.1); border-left-color: #F472B6; }
+  .ev.sky { background: rgba(56,189,248,0.1); border-left-color: #38BDF8; }
+  .ev.violet { background: rgba(167,139,250,0.1); border-left-color: #A78BFA; }
+  .ev.amber { background: rgba(251,191,36,0.1); border-left-color: #FBBF24; }
+
+  [data-theme="dark"] .ev.gold { color: var(--gold-light); }
+  [data-theme="dark"] .ev.emerald { color: #6EE7B7; }
+  [data-theme="dark"] .ev.rose { color: #F9A8D4; }
+  [data-theme="dark"] .ev.sky { color: #7DD3FC; }
+  [data-theme="dark"] .ev.violet { color: #C4B5FD; }
+  [data-theme="dark"] .ev.amber { color: #FCD34D; }
+
+  [data-theme="light"] .ev.gold { color: var(--gold-dark); }
+  [data-theme="light"] .ev.emerald { color: #059669; }
+  [data-theme="light"] .ev.rose { color: #DB2777; }
+  [data-theme="light"] .ev.sky { color: #0284C7; }
+  [data-theme="light"] .ev.violet { color: #7C3AED; }
+  [data-theme="light"] .ev.amber { color: #D97706; }
+
+  .cal { transition: opacity 0.3s, transform 0.3s; }
+
+  @media (max-width: 768px) {
+    .header { padding: 12px 14px; }
+    .logo { font-size: 20px; }
+    .month-nav { padding: 14px 14px 8px; gap: 10px; }
+    .month-title { font-size: 22px; min-width: 180px; }
+    .cal { padding: 0 8px 30px; }
+    .dc { min-height: 120px; padding: 5px; }
+    .dn { font-size: 14px; }
+    .ev { font-size: 9px; padding: 3px 5px; }
+    .ev-time { font-size: 8px; }
+  }
+
+  @media (max-width: 480px) {
+    .dc { min-height: 90px; padding: 3px; }
+    .ev-time { display: none; }
+    .ev { font-size: 8px; padding: 2px 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">Talpis</div>
+    <div class="logo-sub">Календарь мероприятий</div>
+  </div>
+  <div class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
+    <span class="ic ic-m">🌙</span>
+    <span class="ic ic-s">☀️</span>
+  </div>
+</div>
+
+<div class="month-nav">
+  <button onclick="changeMonth(-1)">&#8592;</button>
+  <div class="month-title" id="mt"></div>
+  <button onclick="changeMonth(1)">&#8594;</button>
+</div>
+
+<div class="cal" id="cal"></div>
+
+<script>
+const MO=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const WD=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const CL=['gold','emerald','rose','sky','violet','amber'];
+
+const ec={};
+
+let EVENTS = {};
+
+function loadEvents() {
+  const callbackName = 'gsheetCallback_' + Date.now();
+  
+  window[callbackName] = function(response) {
+    try {
+      const rows = response.table.rows;
+      EVENTS = {};
+      
+      function gDate(cell) {
+        if (!cell || !cell.v) return null;
+        if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
+          const parts = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
+          return new Date(parts[0], parts[1], parts[2]);
+        }
+        return new Date(cell.v);
+      }
+      
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i].c;
+        if (!r || !r[0]) continue;
+        const start = gDate(r[0]);
+        const end = gDate(r[1]) || start;
+        if (!start || isNaN(start.getTime())) continue;
+        if (!end || isNaN(end.getTime())) continue;
+        const title = (r[6] && r[6].v) ? String(r[6].v).replace(/\n/g,' ').trim() : '';
+        if (!title) continue;
+        const timeStart = (r[2] && r[2].v) ? String(r[2].v).trim() : '';
+        const resp = (r[7] && r[7].v) ? String(r[7].v).trim() : '';
+        const fmt = (r[8] && r[8].v) ? String(r[8].v).trim() : '';
+        const color = fmt==='Оффлайн'?'rose':fmt==='Смешанный'?'violet':fmt==='Онлайн'?'sky':'gold';
+        const timeStr = (timeStart && timeStart !== '—') ? timeStart : '';
+        const respStr = (resp && resp !== '—' && resp !== '-') ? resp : '';
+        const d = new Date(start);
+        while (d <= end) {
+          const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+          if (!EVENTS[key]) EVENTS[key] = [];
+          EVENTS[key].push({title, time: timeStr, resp: respStr, color});
+          d.setDate(d.getDate()+1);
+        }
+      }
+    } catch(e) { console.error('Ошибка загрузки:', e); }
+    render();
+    delete window[callbackName];
+    document.getElementById('gsheet-script').remove();
+  };
+  
+  const script = document.createElement('script');
+  script.id = 'gsheet-script';
+  script.src = 'https://docs.google.com/spreadsheets/d/1g1jj_ifBAErWexiS_XehNn1dfHH87rQMHHWQHwR9538/gviz/tq?tqx=responseHandler:' + callbackName + '&gid=1505753042';
+  document.body.appendChild(script);
+}
+
+const now=new Date();
+let cY=now.getFullYear(), cM=now.getMonth();
+
+function render(){
+  const cal=document.getElementById('cal');
+  document.getElementById('mt').innerHTML=`${MO[cM]} <span>${cY}</span>`;
+
+  const dim=new Date(cY,cM+1,0).getDate();
+  const ev=EVENTS;
+  const ts=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+  let fd=(new Date(cY,cM,1).getDay()+6)%7; // Mon=0
+
+  let h='<div class="week-head">';
+  WD.forEach((w,i)=> h+=`<div class="wh${i>=5?' we':''}">${w}</div>`);
+  h+='</div>';
+
+  let day=1;
+  while(day<=dim){
+    h+='<div class="week">';
+    for(let c=0;c<7;c++){
+      if((day===1&&c<fd)||day>dim){ h+='<div class="dc empty"></div>'; continue; }
+      const dt=new Date(cY,cM,day);
+      const dow=(dt.getDay()+6)%7;
+      if(dow!==c){ h+='<div class="dc empty"></div>'; continue; }
+
+      const ds=`${cY}-${String(cM+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const isT=ds===ts, isW=c>=5;
+
+      h+=`<div class="dc${isT?' today':''}${isW?' we':''}">`;
+      h+=`<div class="dn">${day}${isT?'<span class="td"></span>':''}</div>`;
+      h+='<div class="ev-list">';
+      if(ev[ds]) ev[ds].forEach(e=>{
+        h+=`<div class="ev ${e.color}">${e.time?'<span class="ev-time">'+e.time+'</span>':''}<span class="ev-title">${e.title}</span>${e.resp?'<span class="ev-desc">'+e.resp+'</span>':''}</div>`;
+      });
+      h+='</div></div>';
+      day++;
+    }
+    h+='</div>';
+  }
+
+  cal.style.opacity='0'; cal.style.transform='translateY(6px)';
+  setTimeout(()=>{ cal.innerHTML=h; cal.style.opacity='1'; cal.style.transform='translateY(0)'; },100);
+}
+
+function changeMonth(d){
+  cM+=d;
+  if(cM>11){cM=0;cY++;}
+  if(cM<0){cM=11;cY--;}
+  render();
+}
+
+function toggleTheme(){
+  const h=document.documentElement;
+  h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft')changeMonth(-1);
+  if(e.key==='ArrowRight')changeMonth(1);
+});
+
+render();
+loadEvents();
+</script>
+</body>
+</html>
