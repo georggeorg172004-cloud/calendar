@@ -79,6 +79,31 @@
     color: var(--muted); margin-top: 1px;
   }
 
+  .header-right {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .status-badge {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #34D399;
+    animation: pulse 2s infinite;
+  }
+  .status-dot.loading { background: var(--gold); }
+  .status-dot.error { background: #F472B6; animation: none; }
+
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.4); }
+    50% { box-shadow: 0 0 0 5px rgba(52,211,153,0); }
+  }
+
   .theme-toggle {
     width: 48px; height: 26px;
     background: var(--toggle-bg); border-radius: 13px;
@@ -119,7 +144,6 @@
   }
   .month-title span { color: var(--gold); }
 
-  /* CALENDAR GRID */
   .cal {
     padding: 0 28px 40px; overflow-x: auto;
     scrollbar-width: thin;
@@ -193,9 +217,9 @@
     width: 5px; height: 5px; border-radius: 50%;
     background: var(--gold);
     margin-left: 4px; vertical-align: middle;
-    animation: pulse 2s infinite;
+    animation: gpulse 2s infinite;
   }
-  @keyframes pulse {
+  @keyframes gpulse {
     0%,100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
     50% { box-shadow: 0 0 0 5px rgba(201,168,76,0); }
   }
@@ -213,32 +237,38 @@
   .ev-title { font-weight: 600; display: block; margin-bottom: 2px; }
   .ev-desc { font-size: 10px; font-weight: 300; opacity: 0.75; line-height: 1.35; display: block; }
 
-  .ev.gold { background: rgba(201,168,76,0.12); border-left-color: var(--gold); }
-  .ev.emerald { background: rgba(52,211,153,0.1); border-left-color: #34D399; }
-  .ev.rose { background: rgba(244,114,182,0.1); border-left-color: #F472B6; }
-  .ev.sky { background: rgba(56,189,248,0.1); border-left-color: #38BDF8; }
-  .ev.violet { background: rgba(167,139,250,0.1); border-left-color: #A78BFA; }
-  .ev.amber { background: rgba(251,191,36,0.1); border-left-color: #FBBF24; }
+  .ev.gold    { background: rgba(201,168,76,0.12); border-left-color: var(--gold); }
+  .ev.emerald { background: rgba(52,211,153,0.1);  border-left-color: #34D399; }
+  .ev.rose    { background: rgba(244,114,182,0.1); border-left-color: #F472B6; }
+  .ev.sky     { background: rgba(56,189,248,0.1);  border-left-color: #38BDF8; }
+  .ev.violet  { background: rgba(167,139,250,0.1); border-left-color: #A78BFA; }
+  .ev.amber   { background: rgba(251,191,36,0.1);  border-left-color: #FBBF24; }
 
-  [data-theme="dark"] .ev.gold { color: var(--gold-light); }
+  [data-theme="dark"] .ev.gold    { color: var(--gold-light); }
   [data-theme="dark"] .ev.emerald { color: #6EE7B7; }
-  [data-theme="dark"] .ev.rose { color: #F9A8D4; }
-  [data-theme="dark"] .ev.sky { color: #7DD3FC; }
-  [data-theme="dark"] .ev.violet { color: #C4B5FD; }
-  [data-theme="dark"] .ev.amber { color: #FCD34D; }
+  [data-theme="dark"] .ev.rose    { color: #F9A8D4; }
+  [data-theme="dark"] .ev.sky     { color: #7DD3FC; }
+  [data-theme="dark"] .ev.violet  { color: #C4B5FD; }
+  [data-theme="dark"] .ev.amber   { color: #FCD34D; }
 
-  [data-theme="light"] .ev.gold { color: var(--gold-dark); }
+  [data-theme="light"] .ev.gold    { color: var(--gold-dark); }
   [data-theme="light"] .ev.emerald { color: #059669; }
-  [data-theme="light"] .ev.rose { color: #DB2777; }
-  [data-theme="light"] .ev.sky { color: #0284C7; }
-  [data-theme="light"] .ev.violet { color: #7C3AED; }
-  [data-theme="light"] .ev.amber { color: #D97706; }
+  [data-theme="light"] .ev.rose    { color: #DB2777; }
+  [data-theme="light"] .ev.sky     { color: #0284C7; }
+  [data-theme="light"] .ev.violet  { color: #7C3AED; }
+  [data-theme="light"] .ev.amber   { color: #D97706; }
 
   .cal { transition: opacity 0.3s, transform 0.3s; }
+
+  .empty-month {
+    text-align: center; padding: 60px 20px;
+    color: var(--muted); font-size: 14px;
+  }
 
   @media (max-width: 768px) {
     .header { padding: 12px 14px; }
     .logo { font-size: 20px; }
+    .status-badge { display: none; }
     .month-nav { padding: 14px 14px 8px; gap: 10px; }
     .month-title { font-size: 22px; min-width: 180px; }
     .cal { padding: 0 8px 30px; }
@@ -262,9 +292,15 @@
     <div class="logo">Talpis</div>
     <div class="logo-sub">Календарь мероприятий</div>
   </div>
-  <div class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
-    <span class="ic ic-m">🌙</span>
-    <span class="ic ic-s">☀️</span>
+  <div class="header-right">
+    <div class="status-badge" id="statusBadge">
+      <div class="status-dot loading" id="statusDot"></div>
+      <span id="statusText">Загрузка...</span>
+    </div>
+    <div class="theme-toggle" onclick="toggleTheme()" title="Сменить тему">
+      <span class="ic ic-m">🌙</span>
+      <span class="ic ic-s">☀️</span>
+    </div>
   </div>
 </div>
 
@@ -277,130 +313,193 @@
 <div class="cal" id="cal"></div>
 
 <script>
-const MO=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-const WD=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-const CL=['gold','emerald','rose','sky','violet','amber'];
+const MO = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const WD = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 
-const ec={};
+const SPREADSHEET_ID = '1g1jj_ifBAErWexiS_XehNn1dfHH87rQMHHWQHwR9538';
+const GID = '1505753042';
 
 let EVENTS = {};
+const now = new Date();
+let cY = now.getFullYear(), cM = now.getMonth();
+
+function setStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  const label = document.getElementById('statusText');
+  dot.className = 'status-dot ' + (state === 'ok' ? '' : state);
+  label.textContent = text;
+}
+
+function gDate(v) {
+  if (!v) return null;
+  if (typeof v === 'string' && v.startsWith('Date(')) {
+    const p = v.replace('Date(','').replace(')','').split(',').map(Number);
+    // Google Sheets месяц 0-based → Date(2026,1,1) = 1 февраля 2026
+    return new Date(p[0], p[1], p[2]);
+  }
+  return null;
+}
+
+function isBad(v) {
+  return !v || v === '—' || v === '-' || v === '\u2014';
+}
 
 function loadEvents() {
-  const callbackName = 'gsheetCallback_' + Date.now();
-  
-  window[callbackName] = function(response) {
+  setStatus('loading', 'Загрузка...');
+  const cbName = 'gsCb_' + Date.now();
+
+  window[cbName] = function(response) {
     try {
       const rows = response.table.rows;
       EVENTS = {};
-      
-      function gDate(cell) {
-        if (!cell || !cell.v) return null;
-        if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
-          const parts = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
-          return new Date(parts[0], parts[1], parts[2]);
-        }
-        return new Date(cell.v);
-      }
-      
+      let count = 0;
+
       for (let i = 0; i < rows.length; i++) {
         const r = rows[i].c;
-        if (!r || !r[0]) continue;
-        const start = gDate(r[0]);
-        const end = gDate(r[1]) || start;
+        if (!r) continue;
+
+        // Колонки: A=r[0]=id, B=r[1]=дата начала, C=r[2]=дата окончания,
+        // D=r[3]=время начала, E=r[4]=время окончания, F=r[5]=часовой пояс,
+        // G=r[6]=месяц, H=r[7]=название, I=r[8]=ответственный, J=r[9]=формат
+        const start = gDate(r[1] && r[1].v);
+        const end   = gDate(r[2] && r[2].v) || start;
         if (!start || isNaN(start.getTime())) continue;
-        if (!end || isNaN(end.getTime())) continue;
-        const title = (r[6] && r[6].v) ? String(r[6].v).replace(/\n/g,' ').trim() : '';
+
+        const title = (r[7] && r[7].v) ? String(r[7].v).replace(/\n/g,' ').trim() : '';
         if (!title) continue;
-        const timeStart = (r[2] && r[2].v) ? String(r[2].v).trim() : '';
-        const resp = (r[7] && r[7].v) ? String(r[7].v).trim() : '';
-        const fmt = (r[8] && r[8].v) ? String(r[8].v).trim() : '';
-        const color = fmt==='Оффлайн'?'rose':fmt==='Смешанный'?'violet':fmt==='Онлайн'?'sky':'gold';
-        const timeStr = (timeStart && timeStart !== '—') ? timeStart : '';
-        const respStr = (resp && resp !== '—' && resp !== '-') ? resp : '';
+
+        const timeStart  = (!isBad(r[3] && r[3].v)) ? String(r[3].v).trim() : '';
+        const resp       = (!isBad(r[8] && r[8].v)) ? String(r[8].v).trim() : '';
+        const fmt        = (r[9] && r[9].v) ? String(r[9].v).trim() : '';
+        const tz         = (!isBad(r[5] && r[5].v)) ? String(r[5].v).trim() : '';
+
+        const color = fmt === 'Оффлайн' ? 'rose'
+                    : fmt === 'Смешанный' ? 'violet'
+                    : fmt === 'Онлайн' ? 'sky'
+                    : 'gold';
+
+        const timeLabel = timeStart ? timeStart + (tz ? ' ' + tz : '') : '';
+
+        // Добавляем на каждый день диапазона
         const d = new Date(start);
         while (d <= end) {
-          const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+          const key = d.getFullYear() + '-'
+            + String(d.getMonth() + 1).padStart(2,'0') + '-'
+            + String(d.getDate()).padStart(2,'0');
           if (!EVENTS[key]) EVENTS[key] = [];
-          EVENTS[key].push({title, time: timeStr, resp: respStr, color});
-          d.setDate(d.getDate()+1);
+          EVENTS[key].push({ title, time: timeLabel, resp, color });
+          d.setDate(d.getDate() + 1);
         }
+        count++;
       }
-    } catch(e) { console.error('Ошибка загрузки:', e); }
+
+      setStatus('ok', `${count} мероприятий`);
+    } catch(e) {
+      console.error('Ошибка парсинга:', e);
+      setStatus('error', 'Ошибка загрузки');
+    }
+
     render();
-    delete window[callbackName];
-    document.getElementById('gsheet-script').remove();
+    delete window[cbName];
+    const s = document.getElementById('gs-script');
+    if (s) s.remove();
   };
-  
+
+  const old = document.getElementById('gs-script');
+  if (old) old.remove();
+
   const script = document.createElement('script');
-  script.id = 'gsheet-script';
-  script.src = 'https://docs.google.com/spreadsheets/d/1g1jj_ifBAErWexiS_XehNn1dfHH87rQMHHWQHwR9538/gviz/tq?tqx=responseHandler:' + callbackName + '&gid=1505753042';
+  script.id = 'gs-script';
+  // tq=select * — читаем ВСЕ строки независимо от фильтра в таблице
+  script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq`
+    + `?tqx=responseHandler:${cbName}&gid=${GID}&tq=select%20*`;
+  script.onerror = () => {
+    setStatus('error', 'Нет доступа');
+    render();
+  };
   document.body.appendChild(script);
 }
 
-const now=new Date();
-let cY=now.getFullYear(), cM=now.getMonth();
+function render() {
+  const cal = document.getElementById('cal');
+  document.getElementById('mt').innerHTML = `${MO[cM]} <span>${cY}</span>`;
 
-function render(){
-  const cal=document.getElementById('cal');
-  document.getElementById('mt').innerHTML=`${MO[cM]} <span>${cY}</span>`;
+  const dim = new Date(cY, cM + 1, 0).getDate();
+  const ts  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
-  const dim=new Date(cY,cM+1,0).getDate();
-  const ev=EVENTS;
-  const ts=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  let fd = (new Date(cY, cM, 1).getDay() + 6) % 7; // Пн=0
 
-  let fd=(new Date(cY,cM,1).getDay()+6)%7; // Mon=0
+  let h = '<div class="week-head">';
+  WD.forEach((w, i) => h += `<div class="wh${i >= 5 ? ' we' : ''}">${w}</div>`);
+  h += '</div>';
 
-  let h='<div class="week-head">';
-  WD.forEach((w,i)=> h+=`<div class="wh${i>=5?' we':''}">${w}</div>`);
-  h+='</div>';
+  let day = 1;
+  while (day <= dim) {
+    h += '<div class="week">';
+    for (let c = 0; c < 7; c++) {
+      if ((day === 1 && c < fd) || day > dim) {
+        h += '<div class="dc empty"></div>';
+        continue;
+      }
+      const dt  = new Date(cY, cM, day);
+      const dow = (dt.getDay() + 6) % 7;
+      if (dow !== c) { h += '<div class="dc empty"></div>'; continue; }
 
-  let day=1;
-  while(day<=dim){
-    h+='<div class="week">';
-    for(let c=0;c<7;c++){
-      if((day===1&&c<fd)||day>dim){ h+='<div class="dc empty"></div>'; continue; }
-      const dt=new Date(cY,cM,day);
-      const dow=(dt.getDay()+6)%7;
-      if(dow!==c){ h+='<div class="dc empty"></div>'; continue; }
+      const ds  = `${cY}-${String(cM+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const isT = ds === ts;
+      const isW = c >= 5;
 
-      const ds=`${cY}-${String(cM+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      const isT=ds===ts, isW=c>=5;
+      h += `<div class="dc${isT ? ' today' : ''}${isW ? ' we' : ''}">`;
+      h += `<div class="dn">${day}${isT ? '<span class="td"></span>' : ''}</div>`;
+      h += '<div class="ev-list">';
 
-      h+=`<div class="dc${isT?' today':''}${isW?' we':''}">`;
-      h+=`<div class="dn">${day}${isT?'<span class="td"></span>':''}</div>`;
-      h+='<div class="ev-list">';
-      if(ev[ds]) ev[ds].forEach(e=>{
-        h+=`<div class="ev ${e.color}">${e.time?'<span class="ev-time">'+e.time+'</span>':''}<span class="ev-title">${e.title}</span>${e.resp?'<span class="ev-desc">'+e.resp+'</span>':''}</div>`;
-      });
-      h+='</div></div>';
+      if (EVENTS[ds]) {
+        EVENTS[ds].forEach(e => {
+          h += `<div class="ev ${e.color}">`;
+          if (e.time) h += `<span class="ev-time">${e.time}</span>`;
+          h += `<span class="ev-title">${e.title}</span>`;
+          if (e.resp) h += `<span class="ev-desc">${e.resp}</span>`;
+          h += '</div>';
+        });
+      }
+
+      h += '</div></div>';
       day++;
     }
-    h+='</div>';
+    h += '</div>';
   }
 
-  cal.style.opacity='0'; cal.style.transform='translateY(6px)';
-  setTimeout(()=>{ cal.innerHTML=h; cal.style.opacity='1'; cal.style.transform='translateY(0)'; },100);
+  cal.style.opacity = '0';
+  cal.style.transform = 'translateY(6px)';
+  setTimeout(() => {
+    cal.innerHTML = h;
+    cal.style.opacity = '1';
+    cal.style.transform = 'translateY(0)';
+  }, 100);
 }
 
-function changeMonth(d){
-  cM+=d;
-  if(cM>11){cM=0;cY++;}
-  if(cM<0){cM=11;cY--;}
+function changeMonth(d) {
+  cM += d;
+  if (cM > 11) { cM = 0; cY++; }
+  if (cM < 0)  { cM = 11; cY--; }
   render();
 }
 
-function toggleTheme(){
-  const h=document.documentElement;
-  h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');
+function toggleTheme() {
+  const h = document.documentElement;
+  h.setAttribute('data-theme', h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 }
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='ArrowLeft')changeMonth(-1);
-  if(e.key==='ArrowRight')changeMonth(1);
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  changeMonth(-1);
+  if (e.key === 'ArrowRight') changeMonth(1);
 });
 
 render();
 loadEvents();
+
+// Автообновление каждые 5 минут
+setInterval(loadEvents, 5 * 60 * 1000);
 </script>
 </body>
 </html>
