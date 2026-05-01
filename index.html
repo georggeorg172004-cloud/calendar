@@ -317,7 +317,7 @@ const MO = ['Январь','Февраль','Март','Апрель','Май','
 const WD = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 
 const SPREADSHEET_ID = '1g1jj_ifBAErWexiS_XehNn1dfHH87rQMHHWQHwR9538';
-const GID = '1505753042';
+const GID = '459982512';
 
 let EVENTS = {};
 const now = new Date();
@@ -412,7 +412,7 @@ function loadEvents() {
   script.id = 'gs-script';
   // range=A:J — читаем сырой диапазон, игнорирует фильтры в таблице
   script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq`
-    + `?tqx=responseHandler:${cbName}&sheet=ивенты&range=A:J&headers=1`;
+    + `?tqx=responseHandler:${cbName}&gid=459982512&range=A:J&headers=1`;
   script.onerror = () => {
     setStatus('error', 'Нет доступа');
     render();
